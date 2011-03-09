@@ -46,7 +46,13 @@ module ActiveRecord
     def reload
       super.tap do
         self.class.state_machines.values.each do |sm|
-          remove_instance_variable(sm.current_state_variable) if instance_variable_defined?(sm.current_state_variable)
+          varnames = sm.state_index.values.inject([sm.current_state_variable]) do |hsh, st|
+              hsh << st.instance_variable_name(:enter)
+              hsh << st.instance_variable_name(:exit)
+            end
+          varnames.each do |varname|
+            remove_instance_variable(varname) if instance_variable_defined?(varname)
+          end
         end
       end
     end

@@ -40,14 +40,18 @@ module Transitions
       end
     end
 
-    def call_action(action, record)
-      action = @options[action]
-      case action
+    def call_action(action_name, record)
+      return if record.send(:instance_variable_get, self.instance_variable_name(action_name))
+      action = @options[action_name]
+      result = case action
       when Symbol, String
         record.send(action)
       when Proc
         action.call(record)
       end
+      record.send(:instance_variable_set, self.instance_variable_name(action_name), true)
+      
+      result
     end
 
     def display_name
@@ -62,6 +66,10 @@ module Transitions
       @display_name = options.delete(:display) if options.key?(:display)
       @options = options
       self
+    end
+    
+    def instance_variable_name(action_name)
+      "@_#{self.name}_#{action_name}_ran"      
     end
   end
 end
