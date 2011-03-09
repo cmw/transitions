@@ -14,7 +14,7 @@ class TrafficLight < ActiveRecord::Base
   include ActiveRecord::Transitions
 
   state_machine do
-    state :off
+    state :off, :enter => :deactivate, :exit => :activate
 
     state :red
     state :green
@@ -35,6 +35,14 @@ class TrafficLight < ActiveRecord::Base
     event :reset do
       transitions :to => :red, :from => [:off]
     end
+  end
+  
+  def activate
+    "activated"
+  end
+  
+  def deactivate
+    "deactivated"
   end
 end
 
@@ -135,6 +143,18 @@ class TestActiveRecord < Test::Unit::TestCase
     assert @light.red?
     @light.update_attribute(:state, 'green')
     assert @light.reload.green?, "reloaded state should come from database, not instance variable"
+  end
+  
+  test "setting state manually triggers enter and exit" do
+    assert @light.off?
+    @light.expects(:activate).twice
+    @light.reset!
+    assert @light.red?
+    @light.state = 'off'
+    @light.save
+    assert @light.reload.off?
+    @light.reset!
+    assert @light.reload.red?
   end
 
 end

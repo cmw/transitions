@@ -27,8 +27,20 @@ module ActiveRecord
     included do
       include ::Transitions
       after_initialize :set_initial_state
+      # state = state.to_sym would result in state_changed? otherwise
+      before_validation do |record|
+        record.state = record.state.to_s
+      end
       validates_presence_of :state
       validate :state_inclusion
+      # trigger :exit and :enter events if state was set manually 
+      before_save do |record|
+        if record.state_changed?
+          machine = record.class.state_machine
+          machine.state_index[record.state_was.try(:to_sym)].try(:call_action, :exit, record)
+          machine.state_index[record.state.to_sym].call_action(:enter, record)
+        end
+      end      
     end
 
     def reload
