@@ -19,4 +19,15 @@ class TestEventBeingFired < Test::Unit::TestCase
 
     assert_equal :closed, event.fire(obj)
   end
+
+  test "should match transitions from :any" do
+    event = Transitions::Event.new(nil, :event) do
+      transitions :to => :closed, :from => :any
+    end
+
+    obj = stub
+    obj.stubs(:current_state).returns(:open)
+
+    assert_equal :closed, event.fire(obj)
+  end
 end
