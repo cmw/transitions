@@ -40,7 +40,18 @@ module Transitions
 
     def fire(obj, to_state = nil, *args)
       from_state = (obj.current_state(@machine ? @machine.name : nil) rescue nil)
-      transitions = @transitions.select { |t| t.from == from_state || t.from == :any}
+      transitions = @transitions.select { |t| t.from == from_state }
+      
+      # Only if no transitions can be found do we want to consider the :any transition
+      transitions.tap do |ts|
+        if ts.empty?
+          ts << @transitions.select { |t| t.from == :any }
+          ts.flatten!
+          ts.compact!
+        end
+      end
+      
+      
       raise InvalidTransition.new("#{from_state.inspect} -> #{to_state.inspect}") if transitions.size == 0
 
       next_state = nil

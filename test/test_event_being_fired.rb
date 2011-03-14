@@ -30,4 +30,16 @@ class TestEventBeingFired < Test::Unit::TestCase
 
     assert_equal :closed, event.fire(obj)
   end
+
+  test "should not use transitions from :any if other transitions match" do
+    event = Transitions::Event.new(nil, :event) do
+      transitions :to => :closed, :from => :any
+      transitions :to => :received, :from => :open
+    end
+
+    obj = stub
+    obj.stubs(:current_state).returns(:open)
+
+    assert_equal :received, event.fire(obj)
+  end
 end
