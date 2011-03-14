@@ -39,8 +39,9 @@ module Transitions
     end
 
     def fire(obj, to_state = nil, *args)
-      transitions = @transitions.select { |t| t.from == obj.current_state(@machine ? @machine.name : nil) || t.from == :any}
-      raise InvalidTransition if transitions.size == 0
+      from_state = (obj.current_state(@machine ? @machine.name : nil) rescue nil)
+      transitions = @transitions.select { |t| t.from == from_state || t.from == :any}
+      raise InvalidTransition.new("#{from_state.inspect} -> #{to_state.inspect}") if transitions.size == 0
 
       next_state = nil
       transitions.each do |transition|
