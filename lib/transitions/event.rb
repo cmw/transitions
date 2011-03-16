@@ -52,7 +52,7 @@ module Transitions
       end
       
       
-      raise InvalidTransition.new("#{from_state.inspect} -> #{to_state.inspect}") if transitions.size == 0
+      raise InvalidTransition.new("#{self.name}: #{from_state.inspect} -> #{to_state.inspect}") if transitions.size == 0
 
       next_state = nil
       transitions.each do |transition|
